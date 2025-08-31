@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Registration App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        header {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        nav a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        nav a:hover, nav a.nav-active {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .page {
+            padding: 30px;
+            display: none;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #6a11cb;
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.2);
+        }
+        
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .row .form-group {
+            flex: 1;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-free {
+            background: linear-gradient(to right, #00b09b, #96c93d);
+            color: white;
+        }
+        
+        .btn-paid {
+            background: linear-gradient(to right, #ff8c00, #ff2d00);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .summary-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .summary-item {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .summary-item label {
+            font-weight: 600;
+            min-width: 150px;
+            margin-bottom: 0;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .pagination-btn {
+            padding: 8px 15px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filters input, .filters select {
+            flex: 1;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #00b09b;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification.error {
+            background: #ff4757;
+        }
+        
+        .sheet-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .sheet-tab {
+            padding: 8px 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .sheet-tab.active {
+            background: #6a11cb;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .btn-group, .action-buttons {
+                flex-direction: column;
+            }
+            
+            .summary-item {
+                flex-direction: column;
+            }
+            
+            .summary-item label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-user-plus"></i> Service Registration</h1>
+            <p>Register for our services with free or premium options</p>
+            <nav>
+                <a href="#" class="nav-active" onclick="showPage('page1')">Registration</a>
+                <a href="#" onclick="showPage('page2')">Summary</a>
+                <a href="#" onclick="showPage('page3')">View Data</a>
+            </nav>
+        </header>
+        
+        <!-- Page 1: Registration Form -->
+        <div id="page1" class="page active">
+            <form id="registrationForm">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" required placeholder="Enter your 10-digit phone number">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="uid">UID (Aadhaar/Voter ID) *</label>
+                    <input type="text" id="uid" required placeholder="Enter your UID number">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Address *</label>
+                    <input type="text" id="address" required placeholder="Enter your complete address">
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="serviceCategory">Service Category *</label>
+                        <select id="serviceCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="finance">Financial Services</option>
+                            <option value="health">Health & Wellness</option>
+                            <option value="education">Education</option>
+                            <option value="tech">Technology</option>
+                            <option value="other">Other Services</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="subCategory">Sub Category *</label>
+                        <select id="subCategory" required>
+                            <option value="">Select Sub Category</option>
+                            <option value="loan">Loan Services</option>
+                            <option value="investment">Investment</option>
+                            <option value="insurance">Insurance</option>
+                            <option value="fitness">Fitness Programs</option>
+                            <option value="online">Online Courses</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn-free" onclick="submitForm('free')">
+                        <i class="fas fa-user"></i> Free Register
+                    </button>
+                    <button type="button" class="btn-paid" onclick="submitForm('paid')">
+                        <i class="fas fa-crown"></i> 30 RS. Register
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Page 2: Summary Page -->
+        <div id="page2" class="page">
+            <h2 style="text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i> Registration Summary
+            </h2>
+            
+            <div class="summary-card">
+                <div class="summary-item">
+                    <label>Name:</label>
+                    <span id="summary-name"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Phone No:</label>
+                    <span id="summary-phone"></span>
+                </div>
+                <div class="summary-item">
+                    <label>UID:</label>
+                    <span id="summary-uid"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Address:</label>
+                    <span id="summary-address"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Service Category:</label>
+                    <span id="summary-service"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Sub Category:</label>
+                    <span id="summary-sub"></span>
+                </div>
+                <div class="summary-item">
+                    <label>Registration Type:</label>
+                    <span id="summary-type"></span>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="showPage('page1')">
+                    <i class="fas fa-edit"></i> Register Another
+                </button>
+                <button class="btn-primary" onclick="showPage('page3')">
+                    <i class="fas fa-database"></i> View All Data
+                </button>
+            </div>
+        </div>
+        
+        <!-- Page 3: Data Display Page -->
+        <div id="page3" class="page">
+            <h2 style="text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-database"></i> Registration Data
+            </h2>
+            
+            <div class="filters">
+                <input type="text" id="searchInput" placeholder="Search records...">
+                <select id="pageSelect">
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                    <option value="100">100 per page</option>
+                </select>
+            </div>
+            
+            <div class="sheet-tabs" id="sheetTabs">
+                <div class="sheet-tab active" data-sheet="1">Sheet 1</div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>UID</th>
+                            <th>Address</th>
+                            <th>Service Category</th>
+                            <th>Sub Category</th>
+                            <th>Registration Type</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="pagination">
+                <button id="prevPage" class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button id="nextPage" class="pagination-btn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-secondary" onclick="showPage('page1')">
+                    <i class="fas fa-plus"></i> New Registration
+                </button>
+                <button class="btn-primary" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Export to Excel
+                </button>
+                <button class="btn-free" onclick="loadData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i> <span id="notificationText"></span>
+    </div>
+
+    <script>
+        // Global variables
+        let allData = [];
+        let currentPage = 1;
+        let perPage = 25;
+        let filteredData = [];
+        let currentSheet = 1;
+        
+        // Show notification
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notificationText');
+            
+            notificationText.textContent = message;
+            notification.classList.remove('error');
+            
+            if (isError) {
+                notification.classList.add('error');
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Show page function
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('nav-active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            // Update active nav link
+            document.querySelector(`nav a[onclick="showPage('${pageId}')"]`).classList.add('nav-active');
+            
+            // If showing data page, load data
+            if (pageId === 'page3') {
+                loadData();
+            }
+        }
+        
+        // Handle form submission
+        async function submitForm(type) {
+            // Basic validation
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const uid = document.getElementById('uid').value;
+            const address = document.getElementById('address').value;
+            const serviceCategory = document.getElementById('serviceCategory').value;
+            const subCategory = document.getElementById('subCategory').value;
+            
+            if (!name || !phone || !uid || !address || !serviceCategory || !subCategory) {
+                showNotification('Please fill all required fields', true);
+                return;
+            }
+            
+            // Phone number validation
+            if (!/^\d{10}$/.test(phone)) {
+                showNotification('Please enter a valid 10-digit phone number', true);
+                return;
+            }
+            
+            // Prepare form data
+            const formData = {
+                name: name,
+                phone: phone,
+                uid: uid,
+                address: address,
+                serviceCategory: document.getElementById('serviceCategory').options[document.getElementById('serviceCategory').selectedIndex].text,
+                subCategory: document.getElementById('subCategory').options[document.getElementById('subCategory').selectedIndex].text,
+                registrationType: type === 'free' ? 'Free Registration' : 'Paid Registration (30 RS)'
+            };
+            
+            // Store data for summary page
+            sessionStorage.setItem('registrationData', JSON.stringify(formData));
+            
+            try {
+                // In a real application, you would send this data to your server
+                // which would then save it to Google Sheets
+                showNotification('Registration successful!');
+                
+                // Show summary page
+                showPage('page2');
+                
+                // Display the data on summary page
+                document.getElementById('summary-name').textContent = formData.name;
+                document.getElementById('summary-phone').textContent = formData.phone;
+                document.getElementById('summary-uid').textContent = formData.uid;
+                document.getElementById('summary-address').textContent = formData.address;
+                document.getElementById('summary-service').textContent = formData.serviceCategory;
+                document.getElementById('summary-sub').textContent = formData.subCategory;
+                document.getElementById('summary-type').textContent = formData.registrationType;
+                
+                // Clear the form
+                document.getElementById('registrationForm').reset();
+                
+            } catch (error) {
+                showNotification('Error: ' + error.message, true);
+            }
+        }
+        
+        // Load data (simulated - in a real app this would come from your server/Google Sheets)
+        async function loadData() {
+            try {
+                showNotification('Loading data...');
+                
+                // In a real application, you would fetch this data from your server
+                // which would retrieve it from Google Sheets
+                
+                // Simulate API call delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Generate sample data for demonstration
+                generateSampleData();
+                
+                // Apply filters and render
+                applyFilters();
+                
+                showNotification('Data loaded successfully');
+            } catch (error) {
+                showNotification('Error loading data: ' + error.message, true);
+            }
+        }
+        
+        // Generate sample data for demonstration
+        function generateSampleData() {
+            allData = [];
+            const categories = ['Financial Services', 'Health & Wellness', 'Education', 'Technology', 'Other Services'];
+            const subCategories = ['Loan Services', 'Investment', 'Insurance', 'Fitness Programs', 'Online Courses'];
+            const names = ['John Doe', 'Jane Smith', 'Robert Johnson', 'Emily Davis', 'Michael Wilson', 'Sarah Brown', 'David Miller', 'Lisa Taylor'];
+            const addresses = ['123 Main St, City', '456 Oak Ave, Town', '789 Pine Rd, Village', '321 Elm St, Borough'];
+            
+            for (let i = 1; i <= 53; i++) {
+                allData.push({
+                    Name: names[Math.floor(Math.random() * names.length)] + ' ' + i,
+                    Phone: '9' + Math.floor(100000000 + Math.random() * 900000000),
+                    UID: Math.floor(100000000000 + Math.random() * 900000000000),
+                    Address: addresses[Math.floor(Math.random() * addresses.length)],
+                    'Service Category': categories[Math.floor(Math.random() * categories.length)],
+                    'Sub Category': subCategories[Math.floor(Math.random() * subCategories.length)],
+                    'Registration Type': Math.random() > 0.5 ? 'Free Registration' : 'Paid Registration (30 RS)',
+                    Timestamp: new Date(Date.now() - Math.floor(Math.random() * 10000000000)).toLocaleString()
+                });
+            }
+            
+            // Update sheet tabs based on data
+            updateSheetTabs();
+        }
+        
+        // Update sheet tabs based on data
+        function updateSheetTabs() {
+            const sheetTabs = document.getElementById('sheetTabs');
+            sheetTabs.innerHTML = '';
+            
+            const totalSheets = Math.ceil(allData.length / 25);
+            
+            for (let i = 1; i <= totalSheets; i++) {
+                const tab = document.createElement('div');
+                tab.className = 'sheet-tab' + (i === currentSheet ? ' active' : '');
+                tab.textContent = `Sheet ${i}`;
+                tab.setAttribute('data-sheet', i);
+                tab.onclick = function() {
+                    currentSheet = parseInt(this.getAttribute('data-sheet'));
+                    document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    renderTable();
+                };
+                sheetTabs.appendChild(tab);
+            }
+        }
+        
+        // Apply filters and render table
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm) {
+                filteredData = allData.filter(item => 
+                    (item.Name && item.Name.toLowerCase().includes(searchTerm)) ||
+                    (item.Phone && item.Phone.includes(searchTerm)) ||
+                    (item.UID && item.UID.toString().toLowerCase().includes(searchTerm)) ||
+                    (item.Address && item.Address.toLowerCase().includes(searchTerm)) ||
+                    (item['Service Category'] && item['Service Category'].toLowerCase().includes(searchTerm)) ||
+                    (item['Sub Category'] && item['Sub Category'].toLowerCase().includes(searchTerm))
+                );
+            } else {
+                filteredData = [...allData];
+            }
+            
+            currentPage = 1;
+            renderTable();
+        }
+        
+        // Render table with current page data
+        function renderTable() {
+            const tableBody = document.querySelector('#dataTable tbody');
+            tableBody.innerHTML = '';
+            
+            // Get data for current sheet
+            const startIdx = (currentSheet - 1) * 25;
+            const endIdx = Math.min(startIdx + 25, filteredData.length);
+            const sheetData = filteredData.slice(startIdx, endIdx);
+            
+            sheetData.forEach(row => {
+                const tr = document.createElement('tr');
+                
+                tr.innerHTML = `
+                    <td>${row.Name || ''}</td>
+                    <td>${row.Phone || ''}</td>
+                    <td>${row.UID || ''}</td>
+                    <td>${row.Address || ''}</td>
+                    <td>${row['Service Category'] || ''}</td>
+                    <td>${row['Sub Category'] || ''}</td>
+                    <td>${row['Registration Type'] || ''}</td>
+                    <td>${row.Timestamp || ''}</td>
+                `;
+                
+                tableBody.appendChild(tr);
+            });
+            
+            // Update pagination info
+            const totalPages = Math.ceil(sheetData.length / perPage);
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            
+            // Enable/disable pagination buttons
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+        }
+        
+        // Export to Excel
+        function exportToExcel() {
+            try {
+                // Prepare data for Excel
+                const data = [
+                    ['Name', 'Phone', 'UID', 'Address', 'Service Category', 'Sub Category', 'Registration Type', 'Date']
+                ];
+                
+                filteredData.forEach(row => {
+                    data.push([
+                        row.Name || '',
+                        row.Phone || '',
+                        row.UID || '',
+                        row.Address || '',
+                        row['Service Category'] || '',
+                        row['Sub Category'] || '',
+                        row['Registration Type'] || '',
+                        row.Timestamp || ''
+                    ]);
+                });
+                
+                // Create worksheet
+                const ws = XLSX.utils.aoa_to_sheet(data);
+                
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Registrations');
+                
+                // Export to Excel
+                XLSX.writeFile(wb, 'RegistrationData.xlsx');
+                
+                showNotification('Data exported to Excel successfully!');
+            } catch (error) {
+                showNotification('Error exporting to Excel: ' + error.message, true);
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add interactivity to form inputs
+            const inputs = document.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                    this.parentElement.style.transition = 'transform 0.3s';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+            
+            // Set up event listeners
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            
+            document.getElementById('pageSelect').addEventListener('change', function(e) {
+                perPage = parseInt(e.target.value);
+                currentPage = 1;
+                renderTable();
+            });
+            
+            document.getElementById('prevPage').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            
+            document.getElementById('nextPage').addEventListener('click', function() {
+                const totalPages = Math.ceil(filteredData.length / perPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+            
+            // Check if we have registration data to show on summary page
+            if (window.location.hash === '#summary') {
+                showPage('page2');
+                const formData = JSON.parse(sessionStorage.getItem('registrationData') || '{}');
+                
+                if (Object.keys(formData).length > 0) {
+                    document.getElementById('summary-name').textContent = formData.name;
+                    document.getElementById('summary-phone').textContent = formData.phone;
+                    document.getElementById('summary-uid').textContent = formData.uid;
+                    document.getElementById('summary-address').textContent = formData.address;
+                    document.getElementById('summary-service').textContent = formData.serviceCategory;
+                    document.getElementById('summary-sub').textContent = formData.subCategory;
+                    document.getElementById('summary-type').textContent = formData.registrationType;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
